@@ -3,9 +3,11 @@ exports.handler = async function(event) {
     const result = 42+404;
     console.log("result")
     console.log(result)
+    console.log("request:", JSON.stringify(event, undefined, 2));
+
     return {
         statusCode: 200,
-        headers: { "Content-Type": "text/json" },
-        body: JSON.stringify({ message: "Hello from my new Lambda node!"})
+        headers: { "Content-Type": "text/plain" },
+        body: `Hello, CDK! key1 is: ${event.key1}\n`
     };
 };
