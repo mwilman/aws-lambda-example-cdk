@@ -1,4 +1,5 @@
-exports.handler = async function(event) {
+
+export const handler = async (event: {key1: string, key2: string, key3:string}) => {
     console.log("Hallo aus dem lambda");
     const result = 42+404;
     console.log("result")
