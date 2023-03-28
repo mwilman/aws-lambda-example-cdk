@@ -10,6 +10,9 @@ export class NodeAppCdkStack extends cdk.Stack {
             entry: 'src/index.ts',
             handler: 'index.handler',
             memorySize: 1024,
+            bundling: {
+                minify: true
+            },
             runtime: lambda.Runtime.NODEJS_14_X,
             timeout: cdk.Duration.seconds(300),
         });
