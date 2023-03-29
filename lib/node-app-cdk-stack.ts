@@ -32,5 +32,9 @@ export class NodeAppCdkStack extends cdk.Stack {
         api.root
             .resourceForPath("hello")
             .addMethod("GET", new LambdaIntegration(dynamoLambda));
+
+        new cdk.CfnOutput(this, "HTTP API URL", {
+            value: api.url ?? "Something went wrong with the deploy",
+        });
     }
 }
