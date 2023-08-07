@@ -1,7 +1,8 @@
 import {Construct} from 'constructs';
 import {CodePipeline, CodePipelineSource, ManualApprovalStep, ShellStep} from 'aws-cdk-lib/pipelines';
 import {Stack, StackProps} from "aws-cdk-lib";
-import {MyPipelineAppStage} from "./my-pipeline-stage";
+import {MyPipelineAppStageDev} from "./my-pipeline-stage-dev";
+import {MyPipelineAppStageProd} from "./my-pipeline-stage-prod";
 
 export class MyPipelineStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -17,10 +18,14 @@ export class MyPipelineStack extends Stack {
             })
         });
 
-        const testingStage = pipeline.addStage(new MyPipelineAppStage(this, 'testing', {
+        const testingStage = pipeline.addStage(new MyPipelineAppStageDev(this, 'testing', {
             env: { account: '781666490500', region: 'eu-central-1' }
         }));
 
         testingStage.addPost(new ManualApprovalStep('approval'));
+
+        const prod = pipeline.addStage(new MyPipelineAppStageProd(this, 'prod', {
+            env: { account: '781666490500', region: 'eu-central-1' }
+        }));
     }
 }
