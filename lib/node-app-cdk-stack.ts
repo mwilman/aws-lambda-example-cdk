@@ -3,9 +3,10 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs";
 import {AttributeType, Table} from "aws-cdk-lib/aws-dynamodb";
 import {LambdaIntegration, RestApi} from "aws-cdk-lib/aws-apigateway";
+import {Construct} from "constructs";
 
 export class NodeAppCdkStack extends cdk.Stack {
-    constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
         const dynamoLambda = new NodejsFunction(this, 'LambdaTSFunction', {
