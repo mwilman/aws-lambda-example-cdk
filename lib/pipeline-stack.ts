@@ -18,7 +18,7 @@ export class MyPipelineStack extends Stack {
         });
 
         const testingStage = pipeline.addStage(new MyPipelineAppStage(this, 'testing', {
-            env: { account: '781666490500', region: 'eu-west-1' }
+            env: { account: '781666490500', region: 'eu-central-1' }
         }));
 
         testingStage.addPost(new ManualApprovalStep('approval'));
