@@ -11,7 +11,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: [self-hosted]
+    runs-on: ubuntu-latest
 
     env:
       CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
