@@ -1,0 +1,106 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "dev" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: [self-hosted]
+
+    env:
+      CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
+      VEDL_STAGE: 'dvit'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+#      - name: Install AWS CLI
+#        run: |
+#          curl "https://d1vvhvl2y92vvt.cloudfront.net/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+#          unzip awscliv2.zip
+#          sudo ./aws/install
+#        shell: bash
+
+      - name: Install and configure AWS CDK
+        run: |
+          npm install -g aws-cdk
+          npm install --global --unsafe-perm=true esbuild@0
+        shell: bash
+
+      - name: Build
+        run: |
+          npm ci
+          npm run build
+          npx tsc -p ./cdk/tsconfig.json
+        working-directory: ${{ github.workspace }}
+
+      - name: Test
+        run: npm test
+        working-directory: ${{ github.workspace }}
+
+      - name: CDK Synth
+        run: cdk synth
+        working-directory: ${{ github.workspace }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: CDK Synth
+        run: cdk synth
+        working-directory: ${{ github.workspace }}
+
+      - name: CDK Deploy
+        run: cdk deploy --all --require-approval=never --concurrency=4
+        working-directory: ${{ github.workspace }}
+
+#      - name: CDK Synth
+#        uses: scottbrenner/aws-cdk-action@v1.5.0
+#        with:
+#          args: synth
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+#      - name: Deploy
+#        run: |
+#          if [[ ${{ env.BRANCH_NAME }} == 'dev_tpo' || ${{ env.BRANCH_NAME }} == 'dev' || ${{ env.BRANCH_NAME }} == 'fait' || ${{ env.BRANCH_NAME }} == 'fait-b' || ${{ env.BRANCH_NAME }} == 'abn' || ${{ env.BRANCH_NAME }} == 'master' ]]; then
+#            echo "${{ env.BRANCH_NAME }} found!"
+#            echo "CDK account: ${{ env.CDK_DEFAULT_ACCOUNT }}"
+#            if [[ "${{ AccountMapping[env.BRANCH_NAME].confirmDeployment }}" == "true" ]]; then
+#              echo "Confirming deployment to ${{ AccountMapping[env.BRANCH_NAME].stage }}"
+#              timeout(time: 7, unit: 'DAYS') {
+#                input(message: "Deploy this build to ${{ AccountMapping[env.BRANCH_NAME].stage }}?", ok: 'Deploy!')
+#              }
+#            fi
+#            echo "Trying to deploy CDK"
+#            export VEDL_STAGE="${{ AccountMapping[env.BRANCH_NAME].stage }}"
+#            npx cdk deploy --all --require-approval=never --concurrency=4
+#          else
+#            echo "Branch ${{ env.BRANCH_NAME }} not configured for deployment."
+#          fi
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#        working-directory: ${{ github.workspace }}
+
+#      - name: Archive Dependency-Check Report
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: dependency-check-report
+#          path: ${{ github.workspace }}/dependency-check-report.html
